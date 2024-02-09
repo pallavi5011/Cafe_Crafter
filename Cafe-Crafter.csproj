@@ -230,6 +230,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>CaffeEntities.edmx</DependentUpon>
     </Compile>
+    <Compile Include="Models\ChangePassword.cs" />
+    <Compile Include="Models\Response.cs" />
     <Compile Include="Models\TokenClaim.cs" />
     <Compile Include="Models\User.cs">
       <DependentUpon>CaffeEntities.tt</DependentUpon>

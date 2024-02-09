@@ -5,13 +5,19 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.IO;
+using System.Net.Mail;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace Cafe_Crafter.Controllers
 {
     [RoutePrefix("api/user")]
+    
     public class UserController : ApiController
     {
         CafeEntities db = new CafeEntities();
+        Response response = new Response();
 
         [HttpPost, Route("signup")]
 
@@ -101,6 +107,42 @@ namespace Cafe_Crafter.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
             }
         }
+
+
+        [HttpPost,Route("updateUserStatus")]
+        [CustomAuthenticationFilter]
+
+        public HttpResponseMessage UpdateUserStatus(User user)
+        {
+            try {
+                var token = Request.Headers.GetValues("authorization").First();
+                TokenClaim tokenClaim = TokenManager.ValidateToken(token);
+                if(tokenClaim.Role != "admin")
+                {
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized);
+                }
+                User userObj = db.Users.Find(user.id);
+                if(userObj == null)
+                {
+                    response.message = "User id does not found";
+                    return Request.CreateResponse(HttpStatusCode.OK, response);
+                }
+                userObj.status = user.status;
+                db.Entry(userObj).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
+                response.message = "User status Updated Successfully";
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+
+            
+            }
+            catch (Exception ex){
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
+            
+            }
+        }
+
+
+
 
     }
 }
