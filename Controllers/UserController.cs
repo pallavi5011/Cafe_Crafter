@@ -141,6 +141,40 @@ namespace Cafe_Crafter.Controllers
             }
         }
 
+        [HttpPost,Route("changePassword")]
+        [CustomAuthenticationFilter]
+
+
+        public HttpResponseMessage ChangePassword(ChangePassword changePassword)
+        {
+            try
+            {
+                var token = Request.Headers.GetValues("authorization").First();
+                TokenClaim tokenClaim = TokenManager.ValidateToken(token);
+
+                User userObj = db.Users.Where(x => (x.email == tokenClaim.Email && x.password == changePassword.OldPassword)).FirstOrDefault();
+                if(userObj != null)
+                {
+                    userObj.password = changePassword.NewPassword;
+                    db.Entry(userObj).State = System.Data.Entity.EntityState.Modified;
+                    db.SaveChanges();
+                    response.message = "password updated successfully";
+                    return Request.CreateResponse(HttpStatusCode.OK, response);
+                }
+                else
+                {
+                    response.message = "Incorrect Old Password";
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+                }
+
+
+            }
+            catch(Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
+            }
+        }
+
 
 
 
