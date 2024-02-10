@@ -143,8 +143,75 @@ namespace Cafe_Crafter.Controllers
             }
         }
 
+        [HttpGet,Route("deleteProduct/{id}")]
+        [CustomAuthenticationFilter]
 
+        public HttpResponseMessage DeleteProduct(int id)
+        {
+            try
+            {
 
-        
+                var token = Request.Headers.GetValues("authorization").First();
+                TokenClaim tokenClaim = TokenManager.ValidateToken(token);
+                if (tokenClaim.Role != "admin")
+                {
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized);
+                }
+
+                Product productObj = db.Products.Find(id);
+                if(productObj == null)
+                {
+                    response.message = "Product id not found";
+                    return Request.CreateResponse(HttpStatusCode.OK, response);
+                }
+
+                db.Products.Remove(productObj);
+                db.SaveChanges();
+                response.message = "Product Deleted SuccessFully";
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
+            }
         }
+
+        [HttpGet, Route("updateProductStatus")]
+        [CustomAuthenticationFilter]
+
+        public HttpResponseMessage UpdateProductStaus([FromBody] Product product)
+        {
+            try
+            {
+
+                var token = Request.Headers.GetValues("authorization").First();
+                TokenClaim tokenClaim = TokenManager.ValidateToken(token);
+                if (tokenClaim.Role != "admin")
+                {
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized);
+                }
+                Product productObj = db.Products.Find(product.id);
+                if (productObj == null)
+                {
+                    response.message = "Product id not found";
+                    return Request.CreateResponse(HttpStatusCode.OK, response);
+                }
+
+                productObj.status = product.status;
+                db.Entry(productObj).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
+                response.message = "Product Status updated SuccessFully";
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+
+
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
+            }
+        }
+
+
+    }
 }
