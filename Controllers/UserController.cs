@@ -176,6 +176,50 @@ namespace Cafe_Crafter.Controllers
         }
 
 
+        private string createEmailBody(string email,string password)
+        {
+            try
+            {
+                string body = string.Empty;
+                using (StreamReader reader = new StreamReader(HttpContext.Current.Server.MapPath("/Template/forgot-password.html")))
+                {
+                    body = reader.ReadToEnd();
+                }
+                body = body.Replace("{email}", email);
+                body = body.Replace("{password}", password);
+                body = body.Replace("{frontendUrl}", "http://localhost:4200/");
+                return body;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+
+        }
+
+        [HttpPost,Route("forgotPassword")]
+
+        public async Task<HttpResponseMessage> ForgotPassword([FromBody] User user)
+        {
+            User userObj = db.Users.Where(x => x.email == user.email).FirstOrDefault();
+            response.message = "Password sent successfully to your email";
+            if(userObj == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            var message = new MailMessage();
+            message.To.Add(new MailAddress(user.email));
+            message.Subject = "Password by Cafe Crafter";
+            message.Body = createEmailBody(user.email, userObj.password);
+            message.IsBodyHtml = true;
+            using (var smtp = new SmtpClient())
+            {
+                await smtp.SendMailAsync(message);
+                await Task.FromResult(0);
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
 
 
     }
