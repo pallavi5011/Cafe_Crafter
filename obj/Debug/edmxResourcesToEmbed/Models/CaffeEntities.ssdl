@@ -7,6 +7,17 @@
     <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
     <Property Name="name" Type="varchar" MaxLength="255" />
   </EntityType>
+  <EntityType Name="Product">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="name" Type="varchar" MaxLength="255" />
+    <Property Name="categoryID" Type="int" />
+    <Property Name="description" Type="varchar" MaxLength="255" />
+    <Property Name="price" Type="int" />
+    <Property Name="status" Type="varchar" MaxLength="20" />
+  </EntityType>
   <EntityType Name="Users">
     <Key>
       <PropertyRef Name="id" />
@@ -21,6 +32,7 @@
   </EntityType>
   <EntityContainer Name="CafeModelStoreContainer">
     <EntitySet Name="Category" EntityType="Self.Category" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="Product" EntityType="Self.Product" Schema="dbo" store:Type="Tables" />
     <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
   </EntityContainer>
 </Schema>

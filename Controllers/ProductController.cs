@@ -70,5 +70,81 @@ namespace Cafe_Crafter.Controllers
             }
         }
 
-    }
+
+        [HttpGet, Route("getProductByCategory{id}")]
+        [CustomAuthenticationFilter]
+
+        public HttpResponseMessage GetProductByCategory(int id)
+        {
+            try
+            {
+                var result = db.Products.Where(x => x.categoryID == id && x.status == "true")
+                .Select(x => new { x.id, x.name }).ToList();
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+
+
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
+            }
+
+        }
+
+        [HttpGet, Route("getProductById/{id}")]
+        [CustomAuthenticationFilter]
+
+        public HttpResponseMessage GetProductById(int id)
+        {
+            try
+            {
+                Product productObj = db.Products.Find(id);
+                return Request.CreateResponse(HttpStatusCode.OK, productObj);
+
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
+            }
+        }
+
+        [HttpPost,Route("updateProduct")]
+        [CustomAuthenticationFilter]
+
+        public HttpResponseMessage UpdateProduct([FromBody] Product product)
+        {
+            try
+            {
+                var token = Request.Headers.GetValues("authorization").First();
+                TokenClaim tokenClaim = TokenManager.ValidateToken(token);
+                if (tokenClaim.Role != "admin")
+                {
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized);
+                }
+                Product productObj = db.Products.Find(product.id);
+                if(productObj == null)
+                {
+                    response.message = "Product id does not found";
+                    return Request.CreateResponse(HttpStatusCode.OK, response);
+                }
+                productObj.name = product.name;
+                productObj.categoryID = product.categoryID;
+                productObj.description = product.description;
+                productObj.price = product.price;
+                db.Entry(productObj).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
+                response.message = "Product Updated Successfully";
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
+            }
+        }
+
+
+
+        
+        }
 }
